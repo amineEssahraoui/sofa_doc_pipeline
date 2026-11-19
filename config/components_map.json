@@ -1,0 +1,56 @@
+
+{
+  "components": [
+    {
+      "name": "CGLinearSolver",
+      "source_urls": [
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/LinearSolver/Iterative/src/sofa/component/linearsolver/iterative/CGLinearSolver.h",
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/LinearSolver/Iterative/src/sofa/component/linearsolver/iterative/CGLinearSolver.cpp",
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/LinearSolver/Iterative/src/sofa/component/linearsolver/iterative/CGLinearSolver.inl"
+      ],
+      "documentation_url": "https://sofa-framework.github.io/doc/components/linearsolver/iterative/cglinearsolver/"
+    },
+    {
+      "name": "PCGLinearSolver",
+      "source_urls": [
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/LinearSolver/Iterative/src/sofa/component/linearsolver/iterative/PCGLinearSolver.h",
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/LinearSolver/Iterative/src/sofa/component/linearsolver/iterative/PCGLinearSolver.cpp",
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/LinearSolver/Iterative/src/sofa/component/linearsolver/iterative/PCGLinearSolver.inl"
+      ],
+      "documentation_url": "https://sofa-framework.github.io/doc/components/linearsolver/iterative/pcglinearsolver/"
+    },
+    {
+      "name": "BarycentricMapping",
+      "source_urls": [
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/Mapping/Linear/src/sofa/component/mapping/linear/BarycentricMapping.h",
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/Mapping/Linear/src/sofa/component/mapping/linear/BarycentricMapping.cpp",
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/Mapping/Linear/src/sofa/component/mapping/linear/BarycentricMapping.inl"
+      ],
+      "documentation_url": "https://sofa-framework.github.io/doc/components/mapping/linear/barycentricmapping/"
+    },
+    {
+      "name": "NewmarkIntegrationScheme",
+      "source_urls": [
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/IntegrationScheme/Backward/src/sofa/component/integrationscheme/backward/NewmarkIntegrationScheme.h",
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/IntegrationScheme/Backward/src/sofa/component/integrationscheme/backward/NewmarkIntegrationScheme.cpp"
+      ],
+      "documentation_url": "https://sofa-framework.github.io/doc/components/odesolver/backward/newmarkimplicitsolver/"
+    },
+    {
+      "name": "BDFIntegrationScheme",
+      "source_urls": [
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/IntegrationScheme/Backward/src/sofa/component/integrationscheme/backward/BDFIntegrationScheme.h",
+        "https://github.com/sofa-framework/sofa/blob/master/Sofa/Component/IntegrationScheme/Backward/src/sofa/component/integrationscheme/backward/BDFIntegrationScheme.cpp"
+      ],
+      "documentation_url": "https://sofa-framework.github.io/doc/components/odesolver/backward/bdfodesolver/"
+    },
+    {
+      "name": "NewtonRaphsonSolver",
+      "source_urls": [
+        "https://github.com/sofa-framework/sofa/blob/v25.12/Sofa/Component/ODESolver/Backward/src/sofa/component/odesolver/backward/NewtonRaphsonSolver.h",
+        "https://github.com/sofa-framework/sofa/blob/v25.12/Sofa/Component/ODESolver/Backward/src/sofa/component/odesolver/backward/NewtonRaphsonSolver.cpp"
+      ],
+      "documentation_url": "https://sofa-framework.github.io/doc/components/odesolver/backward/newtonraphsonsolver/"
+    }
+  ]
+}
