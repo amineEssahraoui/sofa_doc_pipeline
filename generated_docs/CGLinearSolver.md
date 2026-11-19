@@ -93,9 +93,9 @@ The CGLinearSolver implements the classic conjugate gradient algorithm, an itera
 
 The **CGLinearSolver** component solves a linear system  
 
-$$
+```math
 \mathbf{A}\,x = b ,
-$$
+```
 
 where  
 
@@ -109,26 +109,26 @@ The component makes no a‑priori assumptions on $\mathbf{A}$ beyond those requi
 
 The conjugate‑gradient (CG) method iteratively builds a sequence of approximations $\{x^{k}\}$ using the residual  
 
-$$
+```math
 r^{k}= b - \mathbf{A}\,x^{k},
-$$
+```
 
 and a set of mutually **A‑conjugate** search directions $\{p^{k}\}$.  At each iteration the algorithm computes scalar coefficients  
 
-$$
+```math
 \alpha^{k}= \frac{(r^{k})^{\!\top} r^{k}}{(p^{k})^{\!\top}\mathbf{A}\,p^{k}}, \qquad
 \beta^{k}= \frac{(r^{k+1})^{\!\top} r^{k+1}}{(r^{k})^{\!\top} r^{k}} .
-$$
+```
 
 The updates are  
 
-$$
+```math
 \begin{aligned}
 x^{k+1} &= x^{k} + \alpha^{k} p^{k},\\
 r^{k+1} &= r^{k} - \alpha^{k}\,\mathbf{A}\,p^{k},\\
 p^{k+1} &= r^{k+1} + \beta^{k} p^{k}.
 \end{aligned}
-$$
+```
 
 The iteration stops when either  
 

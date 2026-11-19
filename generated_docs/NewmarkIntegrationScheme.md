@@ -115,9 +115,9 @@ These dependencies illustrate that `NewmarkIntegrationScheme` is a **scene‑gra
 
 The **NewmarkIntegrationScheme** component solves the second‑order dynamical equation of a mechanical system written in the form  
 
-$$
+```math
 M a_{t}+ (r_M M + r_K K) v_{t}+ K x_{t}= f_{\text{ext}}(t) ,
-$$
+```
 
 where  
 
@@ -136,24 +136,24 @@ At each time step of size $h$ the scheme seeks the unknowns $x_{t+h}, v_{t+h}, a
 
 The Newmark implicit scheme updates the kinematic fields using the parameters $\beta$ and $\gamma$ (SOFA data members `beta` and `gamma` with defaults $\beta=0.25,\;\gamma=0.5$【structured_attributes】):
 
-$$
+```math
 \boxed{
 \begin{aligned}
 x_{t+h} &= x_{t}+h\,v_{t}+ \frac{h^{2}}{2}\bigl[(1-2\beta)\,a_{t}+2\beta\,a_{t+h}\bigr],\\[4pt]
 v_{t+h} &= v_{t}+h\bigl[(1-\gamma)\,a_{t}+ \gamma\,a_{t+h}\bigr].
 \end{aligned}}
 \tag{1}
-$$
+```
 
 Inserting (1) into the mechanical equilibrium at $t+h$,
 
-$$
+```math
 M a_{t+h}+ (r_M M+r_K K) v_{t+h}+ K x_{t+h}= f_{\text{ext}}(t+h),
-$$
+```
 
 and eliminating $x_{t+h}$ and $v_{t+h}$ yields a linear system for the unknown acceleration $a_{t+h}$ (SOFA documentation, Eq. 5‑9) :
 
-$$
+```math
 \boxed{
 \bigl[(1+h\gamma r_M)M + (h^{2}\beta + h\gamma r_K)K\bigr]\, a_{t+h}
 = f_{\text{ext}}(t+h)
@@ -161,7 +161,7 @@ $$
  - K\Bigl[x_{t}+h v_{t}+ \frac{h^{2}}{2}(1-2\beta)a_{t}\Bigr].
 }
 \tag{2}
-$$
+```
 
 **Symbol definitions**
 

@@ -102,9 +102,9 @@ These dependencies illustrate that **PCGLinearSolver** sits at the intersection 
 
 The **PCGLinearSolver** component solves a linear system  
 
-$$
+```math
 \mathbf{M}\,\mathbf{x}= \mathbf{b},
-$$
+```
 
 where $\mathbf{M}$ is a symmetric positive‑definite (SPD) matrix, $\mathbf{x}$ the unknown vector, and $\mathbf{b}$ the right‑hand side.  The solver is intended for large, sparse systems that arise in SOFA simulations and therefore uses an iterative method rather than a direct factorisation 【SOFA Evidence: official documentation – introduction】.  
 
@@ -112,13 +112,13 @@ where $\mathbf{M}$ is a symmetric positive‑definite (SPD) matrix, $\mathbf{x}$
 
 The preconditioned conjugate gradient (PCG) method seeks a sequence $\{\mathbf{x}_k\}$ that minimizes the quadratic functional  
 
-$$
+```math
 \Phi(\mathbf{x}) = \tfrac{1}{2}\mathbf{x}^{\!\top}\mathbf{M}\mathbf{x} - \mathbf{x}^{\!\top}\mathbf{b},
-$$
+```
 
 subject to the SPD property of $\mathbf{M}$.  Introducing a preconditioner $\mathbf{P}\approx\mathbf{M}$ (typically SPD), the PCG iteration reads  
 
-$$
+```math
 \begin{aligned}
 \mathbf{r}_0 &= \mathbf{b} - \mathbf{M}\mathbf{x}_0, \\
 \mathbf{z}_0 &= \mathbf{P}^{-1}\mathbf{r}_0, \\
@@ -130,13 +130,13 @@ $$
 \beta_k &= \frac{\mathbf{r}_{k+1}^{\!\top}\mathbf{z}_{k+1}}{\mathbf{r}_k^{\!\top}\mathbf{z}_k}, \\
 \mathbf{p}_{k+1} &= \mathbf{z}_{k+1} + \beta_k \mathbf{p}_k .
 \end{aligned}
-$$
+```
 
 The iteration stops when either  
 
-$$
+```math
 \|\mathbf{r}_k\| \le \text{tolerance} \quad\text{or}\quad k \ge \text{maxIter},
-$$
+```
 
 where *tolerance* and *maxIter* are user‑configurable parameters 【SOFA Evidence: structured_attributes – d_tolerance (line 48, F4)】 and 【SOFA Evidence: structured_attributes – d_maxIter (line 45, F4)】.  
 

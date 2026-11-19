@@ -97,7 +97,7 @@ These dependencies illustrate how `BDFIntegrationScheme` fits into SOFA’s modu
 
 The **BDFIntegrationScheme** component solves the ordinary differential equation that stems from Newton’s second law of motion  
 
-$$
+```math
 \begin{bmatrix}
 \displaystyle \frac{dq}{dt}\\[4pt]
 M\,\displaystyle \frac{d\dot q}{dt}
@@ -108,7 +108,7 @@ M\,\displaystyle \frac{d\dot q}{dt}
 F(q,\dot q)
 \end{bmatrix},
 \tag{1}
-$$
+```
 
 where  
 
@@ -119,17 +119,17 @@ where
 
 Introducing the state vector  
 
-$$
+```math
 y(t)=\begin{bmatrix} q(t) \\ \dot q(t) \end{bmatrix},
 \qquad
 f(t,y)=\begin{bmatrix} \dot q \\ M^{-1}F(q,\dot q) \end{bmatrix},
-$$
+```
 
 the dynamics can be written compactly as  
 
-$$
+```math
 y'(t)=f\bigl(t,y(t)\bigr). \tag{2}
-$$
+```
 
 The goal of the component is to compute the state at the next time instant $t_{n+s}$ (with $s$ the BDF order) using the known states $\{y(t_{n+j})\}_{j=0}^{s-1}$.  This is an implicit multistep integration problem.  (Source: SOFA documentation, *Details* section — equation (1) and accompanying text)  
 
@@ -139,28 +139,28 @@ The goal of the component is to compute the state at the next time instant $t_{n
 
 For a BDF of order $s$ the interpolating polynomial  
 
-$$
+```math
 L(t)=\sum_{j=0}^{s} y_{n+j}\,l_j(t),\qquad
 l_j(t)=\prod_{\substack{0\le m\le s\\ m\neq j}}
 \frac{t-t_{n+m}}{t_{n+j}-t_{n+m}},
-$$
+```
 
 approximates the state over the interval $[t_n,t_{n+s}]$.  
 Differentiating and evaluating at the newest node $t_{n+s}$ yields the BDF relation  
 
-$$
+```math
 \sum_{j=0}^{s} y_{n+j}\,l'_j\!\bigl(t_{n+s}\bigr)=
 f\!\bigl(t_{n+s},y_{n+s}\bigr). \tag{3}
-$$
+```
 
 Define the **residual function**
 
-$$
+```math
 r(q,\dot q)=
 \Bigl[\sum_{j=0}^{s} y_{n+j}\,l'_j(t_{n+s})\Bigr]
 -
 f\!\bigl(t_{n+s},y_{n+s}\bigr), \tag{4}
-$$
+```
 
 with $y_{n+s}=\begin{bmatrix}q\\ \dot q\end{bmatrix}$.  
 The next state is obtained as a root of $r$.
@@ -171,7 +171,7 @@ The next state is obtained as a root of $r$.
 
 At Newton iteration $i$ the residual is linearised, leading to the block system  
 
-$$
+```math
 \begin{bmatrix}
 l'_s(t_{n+s}) I & -\Delta t\, I \\[4pt]
 -\Delta t\,\displaystyle\frac{\partial F}{\partial q} &
@@ -183,11 +183,11 @@ q^{i+1}-q^{i}\\[4pt]
 \end{bmatrix}
 =
 -\,r\!\bigl(q^{i},\dot q^{i}\bigr). \tag{5}
-$$
+```
 
 Eliminating the position increment gives the **velocity‑based** system used in SOFA  
 
-$$
+```math
 \Bigl(l'_s(t_{n+s}) M
 -\Delta t\,\frac{\partial F}{\partial \dot q}
 -\frac{\Delta t^{2}}{l'_s(t_{n+s})}\frac{\partial F}{\partial q}\Bigr)
@@ -196,7 +196,7 @@ $$
 -\,r_{\dot q}^{i}
 -\frac{\Delta t}{l'_s(t_{n+s})}\frac{\partial F}{\partial q}\,
 r_{q}^{i}, \tag{6}
-$$
+```
 
 where $r_{q}$ and $r_{\dot q}$ are the position and velocity components of the residual.  
 Equations (5)–(6) are reproduced verbatim from the SOFA documentation *Details* section (see the two displayed equations).  
@@ -210,10 +210,11 @@ Equations (5)–(6) are reproduced verbatim from the SOFA documentation *Details
 3. **Newton–Raphson solve** – the linear system (5) (or its reduced form (6)) is assembled. The block matrix involves the mass matrix $M$, the Jacobians $\partial F/\partial q$ and $\partial F/\partial \dot q$, the time step $\Delta t$, and the BDF coefficient $l'_s(t_{n+s})$.  
 
 4. **Linear solve** – the system is solved (SOFA uses a block Gaussian elimination as described in the documentation). The solution provides the increments $\Delta q$ and $\Delta\dot q$, which update the guess:  
-   $$
+
+   ```math
    q^{i+1}=q^{i}+\Delta q,\qquad
    \dot q^{i+1}=\dot q^{i}+\Delta\dot q .
-   $$
+   ```
 
 5. **Convergence test** – the norm of the residual is checked; if it is below the tolerance, the iteration stops and the new state $y_{n+s}$ is accepted. Otherwise, another Newton iteration is performed.  
 

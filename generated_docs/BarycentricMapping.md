@@ -113,9 +113,9 @@ The weights are the **barycentric coordinates** of the child point with respect 
 
 Formally, the problem is to find, for every child node $i$,
 
-$$
+```math
 \mathbf{x}^{\text{out}}_i = \sum_{k=1}^{N_c} \lambda_{ik}\,\mathbf{x}^{\text{in}}_{c_k},
-$$
+```
 
 where  
 
@@ -135,24 +135,24 @@ The same linear relation is used for the Jacobian‑vector products (`applyJ`) a
 
 For a point $P$ inside a simplex (segment, triangle, tetrahedron) with vertices $\{V_1,\dots,V_{N_c}\}$, the barycentric coordinates $\{\lambda_k\}$ satisfy  
 
-$$
+```math
 \sum_{k=1}^{N_c} \lambda_k = 1,\qquad
 \lambda_k \ge 0 \;\;(\text{inside the simplex}),
-$$
+```
 
 and the geometric interpolation property  
 
-$$
+```math
 P = \sum_{k=1}^{N_c} \lambda_k V_k .
-$$
+```
 
 In 2‑D (triangle) the coordinates can be expressed by area ratios  
 
-$$
+```math
 \lambda_1 = \frac{\operatorname{area}(P V_2 V_3)}{\operatorname{area}(V_1 V_2 V_3)},\quad
 \lambda_2 = \frac{\operatorname{area}(V_1 P V_3)}{\operatorname{area}(V_1 V_2 V_3)},\quad
 \lambda_3 = \frac{\operatorname{area}(V_1 V_2 P)}{\operatorname{area}(V_1 V_2 V_3)},
-$$
+```
 
 and analogously in 3‑D by volume ratios.  
 These definitions are described in the scientific reference *barycentric‑coordinates.pdf* (pages 1‑3)【Scientific Context: barycentric‑coordinates.pdf p.1‑3】.
@@ -161,9 +161,9 @@ These definitions are described in the scientific reference *barycentric‑coord
 
 Given the barycentric matrix $\Lambda \in \mathbb{R}^{N_{\text{out}}\times N_{\text{in}}}$ whose entry $\Lambda_{ik}= \lambda_{ik}$ (zero if parent vertex $k$ does not belong to the cell of child node $i$), the mapping reads  
 
-$$
+```math
 \boxed{\; \mathbf{X}^{\text{out}} = \Lambda \,\mathbf{X}^{\text{in}} \;}
-$$
+```
 
 where $\mathbf{X}^{\text{in}}$ and $\mathbf{X}^{\text{out}}$ are column vectors stacking all input and output DOFs respectively.  
 

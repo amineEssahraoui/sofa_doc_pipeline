@@ -88,9 +88,9 @@ These dependencies define the modular placement of `NewtonRaphsonSolver` within 
 
 The **NewtonRaphsonSolver** component solves a system of nonlinear equations  
 
-$$
+```math
 F(x)=0 ,\qquad F:\mathbb{R}^{k}\rightarrow\mathbb{R}^{k},
-$$
+```
 
 by iteratively refining an estimate of the root $x\in\mathbb{R}^{k}$.  
 The unknown vector $x$ (the *state*) and the residual vector $F(x)$ are supplied by a user‑defined function that implements the interface `newton_raphson::BaseNonLinearFunction` (see method `solve` in *NewtonRaphsonSolver.cpp*).  
@@ -99,38 +99,38 @@ The unknown vector $x$ (the *state*) and the residual vector $F(x)$ are supplied
 
 At iteration $n$ the solver forms the Jacobian matrix  
 
-$$
+```math
 \nabla_F(x_n)=\frac{\partial F}{\partial x}\bigg|_{x=x_n}\in\mathbb{R}^{k\times k},
-$$
+```
 
 and solves the linear system  
 
-$$
+```math
 \nabla_F(x_n)\,\bigl(x_{n+1}-x_n\bigr) = -F(x_n) \tag{1}
-$$
+```
 
 as documented in the official SOFA description【introduction, equation】.  
 Denoting the solution of (1) by $\Delta x$,
 
-$$
+```math
 \Delta x = x_{n+1}-x_n,
-$$
+```
 
 the new approximation is obtained by the update  
 
-$$
+```math
 x_{n+1}=x_n+\Delta x . \tag{2}
-$$
+```
 
 The iteration stops when one (or more) of the following convergence criteria, all exposed as component data, is satisfied:
 
 | Data attribute | Symbol in the formulation | Meaning |
 |----------------|---------------------------|---------|
-| `relativeSuccessiveStoppingThreshold` | $\displaystyle \frac{\Vert F(x_n)\Vert }{\Vert F(x_{n-1})\Vert }$ | Ratio of successive residual norms |
-| `relativeInitialStoppingThreshold`   | $\displaystyle \frac{\Vert F(x_n)\Vert }{\Vert F(x_0)\Vert }$ | Ratio of current to initial residual norm |
-| `absoluteResidualStoppingThreshold` | $\Vert F(x_n)\Vert $ | Absolute residual norm |
-| `relativeEstimateDifferenceThreshold`| $\displaystyle \frac{\Vert x_n-x_{n-1}\Vert }{\Vert x_{n-1}\Vert }$ | Relative change of the estimate |
-| `absoluteEstimateDifferenceThreshold`| $\Vert x_n-x_{n-1}\Vert $ | Absolute change of the estimate |
+| `relativeSuccessiveStoppingThreshold` | $\displaystyle \frac{\|F(x_n)\|}{\|F(x_{n-1})\|}$ | Ratio of successive residual norms |
+| `relativeInitialStoppingThreshold`   | $\displaystyle \frac{\|F(x_n)\|}{\|F(x_0)\|}$ | Ratio of current to initial residual norm |
+| `absoluteResidualStoppingThreshold` | $\|F(x_n)\|$ | Absolute residual norm |
+| `relativeEstimateDifferenceThreshold`| $\displaystyle \frac{\|x_n-x_{n-1}\|}{\|x_{n-1}\|}$ | Relative change of the estimate |
+| `absoluteEstimateDifferenceThreshold`| $\|x_n-x_{n-1}\|$ | Absolute change of the estimate |
 
 The maximum number of Newton iterations is limited by the data attribute `maxNbIterationsNewton` (default = 1)【F1, line 38】.  
 
