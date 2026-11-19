@@ -38,8 +38,8 @@ The CGLinearSolver implements the classic conjugate gradient algorithm, an itera
 | **SOFA module** | `Sofa.Component.LinearSolver.Iterative` |
 | **Header** | `Sofa/Component/LinearSolver/Iterative/src/sofa/component/linearsolver/iterative/CGLinearSolver.h` (class declared at line 34)【F1】 |
 | **Template parameters** | `TMatrix` – matrix type, `TVector` – vector type (as required by the generic `MatrixLinearSolver` base). |
-| **Integration point** | Implements the generic linear‑solver interface used by the SOFA simulation graph; the solver is invoked by mechanical visitors during the resolution of the linear system \(A x = b\). |
-| **Local data members** | `d_smallDenominatorThreshold` (Data<Real>) and `d_warmStart` (Data<bool>) declared in the header at lines 47‑48【F1】. |
+| **Integration point** | Implements the generic linear‑solver interface used by the SOFA simulation graph; the solver is invoked by mechanical visitors during the resolution of the linear system $A x = b$. |
+| **Local data members** | `d_smallDenominatorThreshold` (`Data<Real>`) and `d_warmStart` (`Data<bool>`) declared in the header at lines 47‑48【F1】. |
 | **Source files** | Header (F1), implementation (F2), inline definitions (F3). |
 
 ### Inheritance Hierarchy
@@ -74,8 +74,8 @@ The CGLinearSolver implements the classic conjugate gradient algorithm, an itera
 | **Header includes (compile‑time)** | `CGLinearSolver.h` includes `config.h`, `MatrixLinearSolver.h`, `IterativeSolver.h`, `helper/map.h`【includes – F1】 | Provides base class definitions, configuration macros, and utility containers. |
 | **Implementation includes** | `CGLinearSolver.cpp` includes `CGLinearSolver.inl`, linear‑algebra headers (`FullMatrix.h`, `SparseMatrix.h`, `CompressedRowSparseMatrix.h`), `ObjectFactory.h`, and `MechanicalVMultiOpVisitor.h`【includes – F2】 | Gives access to concrete matrix types, factory registration, and the visitor used to traverse the mechanical graph during CG iterations. |
 | **Inline definitions** | `CGLinearSolver.inl` includes the header itself, `MechanicalVisitor.h`, and timing helpers (`AdvancedTimer.h`, `ScopedAdvancedTimer.h`)【includes – F3】 | Enables in‑line expansion of performance‑critical CG steps and optional profiling. |
-| **Component interactions** | The solver is invoked by mechanical visitors (`MechanicalVisitor`, `MechanicalVMultiOpVisitor`) that compute matrix‑vector products on the scene graph; it operates on a `Matrix` and `Vector` supplied by the surrounding simulation components (e.g., `MechanicalObject`). This relationship is implied by the includes of visitor headers and by the documented usage pattern in the official component description (requires an integration scheme above and a `MechanicalObject` below in the scene graph)【official_documentation – introduction & usage】. |
-| **Module dependencies** | Belongs to the `Sofa.Component.LinearSolver.Iterative` module and depends on the core behavior module (`sofa::core::behavior`) and the linear‑algebra module (`sofa::linearalgebra`). These dependencies are reflected by the include paths and by the inheritance from `IterativeSolver`. |
+| **Component interactions** |  | The solver is invoked by mechanical visitors (`MechanicalVisitor`, `MechanicalVMultiOpVisitor`) that compute matrix‑vector products on the scene graph; it operates on a `Matrix` and `Vector` supplied by the surrounding simulation components (e.g., `MechanicalObject`). This relationship is implied by the includes of visitor headers and by the documented usage pattern in the official component description (requires an integration scheme above and a `MechanicalObject` below in the scene graph)【official_documentation – introduction & usage】. |
+| **Module dependencies** |  | Belongs to the `Sofa.Component.LinearSolver.Iterative` module and depends on the core behavior module (`sofa::core::behavior`) and the linear‑algebra module (`sofa::linearalgebra`). These dependencies are reflected by the include paths and by the inheritance from `IterativeSolver`. |
 
 *Note:* The evidence does not detail runtime service registration (e.g., `ObjectFactory` usage) beyond the inclusion of the header; therefore, no further component‑level dependencies are asserted.
 
@@ -93,48 +93,48 @@ The CGLinearSolver implements the classic conjugate gradient algorithm, an itera
 
 The **CGLinearSolver** component solves a linear system  
 
-\[
+$$
 \mathbf{A}\,x = b ,
-\]
+$$
 
 where  
 
-* \(\mathbf{A}\) is a square matrix supplied to the solver,  
-* \(x\) is the unknown vector of degrees of freedom, and  
-* \(b\) is the right‑hand side vector that is assumed to have been assembled by the simulation (e.g., in `computeForce()`).  
+* $\mathbf{A}$ is a square matrix supplied to the solver,  
+* $x$ is the unknown vector of degrees of freedom, and  
+* $b$ is the right‑hand side vector that is assumed to have been assembled by the simulation (e.g., in `computeForce()`).  
 
-The component makes no a‑priori assumptions on \(\mathbf{A}\) beyond those required by the conjugate‑gradient method (see the scientific reference).  This problem statement is documented in the SOFA component description【official_documentation.introduction[0].text】.
+The component makes no a‑priori assumptions on $\mathbf{A}$ beyond those required by the conjugate‑gradient method (see the scientific reference).  This problem statement is documented in the SOFA component description【official_documentation.introduction[0].text】.
 
 ### Mathematical Formulation
 
-The conjugate‑gradient (CG) method iteratively builds a sequence of approximations \(\{x^{k}\}\) using the residual  
+The conjugate‑gradient (CG) method iteratively builds a sequence of approximations $\{x^{k}\}$ using the residual  
 
-\[
+$$
 r^{k}= b - \mathbf{A}\,x^{k},
-\]
+$$
 
-and a set of mutually **A‑conjugate** search directions \(\{p^{k}\}\).  At each iteration the algorithm computes scalar coefficients  
+and a set of mutually **A‑conjugate** search directions $\{p^{k}\}$.  At each iteration the algorithm computes scalar coefficients  
 
-\[
+$$
 \alpha^{k}= \frac{(r^{k})^{\!\top} r^{k}}{(p^{k})^{\!\top}\mathbf{A}\,p^{k}}, \qquad
 \beta^{k}= \frac{(r^{k+1})^{\!\top} r^{k+1}}{(r^{k})^{\!\top} r^{k}} .
-\]
+$$
 
 The updates are  
 
-\[
+$$
 \begin{aligned}
 x^{k+1} &= x^{k} + \alpha^{k} p^{k},\\
 r^{k+1} &= r^{k} - \alpha^{k}\,\mathbf{A}\,p^{k},\\
 p^{k+1} &= r^{k+1} + \beta^{k} p^{k}.
 \end{aligned}
-\]
+$$
 
 The iteration stops when either  
 
-* \(\|r^{k+1}\| \le \text{tolerance}\) (data field `tolerance`), or  
+* $\|r^{k+1}\| \le \text{tolerance}$ (data field `tolerance`), or  
 * the number of iterations reaches the limit `iterations`, or  
-* the denominator \((p^{k})^{\!\top}\mathbf{A}\,p^{k}\) falls below the threshold `threshold` (data field `d_smallDenominatorThreshold`).  
+* the denominator $(p^{k})^{\!\top}\mathbf{A}\,p^{k}$ falls below the threshold `threshold` (data field `d_smallDenominatorThreshold`).  
 
 These quantities are exposed as SOFA data fields:
 
@@ -142,7 +142,7 @@ These quantities are exposed as SOFA data fields:
 |------------|---------|--------|
 | `iterations` | maximum number of CG steps | `IterativeSolver::d_maxIter` in **F5** |
 | `tolerance` | convergence criterion on the residual norm | `IterativeSolver::d_tolerance` in **F5** |
-| `threshold` | minimum admissible value of \((p^{\top} A p)\) to avoid division by a small denominator | `CGLinearSolver::d_smallDenominatorThreshold` in **F1** |
+| `threshold` | minimum admissible value of $(p^{\top} A p)$ to avoid division by a small denominator | `CGLinearSolver::d_smallDenominatorThreshold` in **F1** |
 | `warmStart` | if true, the previous solution is used as the initial guess for the next solve | `CGLinearSolver::d_warmStart` in **F1** |
 
 The CG algorithm is implemented through the public method  
@@ -153,19 +153,19 @@ void solve(Matrix& A, Vector& x, Vector& b) override;   // declared in F1:69, de
 
 which orchestrates the iteration using the helper functions  
 
-* `cgstep_alpha` – performs the \(\alpha\) update (signature in **F1**:59, definition in **F3**:322‑329)  
-* `cgstep_beta`  – performs the \(\beta\) update (signature in **F1**:56, definition in **F3**:314‑319)  
+* `cgstep_alpha` – performs the $\alpha$ update (signature in **F1**:59, definition in **F3**:322‑329)  
+* `cgstep_beta`  – performs the $\beta$ update (signature in **F1**:56, definition in **F3**:314‑319)  
 
 ### Numerical Algorithm
 
 The documented algorithm follows the classic conjugate‑gradient scheme:
 
 1. **Initialization** (`init()` in **F1**:65, defined in **F3**:46‑65) – allocate vectors, optionally set the initial guess (`warmStart`).  
-2. **Compute initial residual** \(r^{0}=b-\mathbf{A}x^{0}\) and set the first direction \(p^{0}=r^{0}\).  
-3. **Iterative loop** (performed inside `solve`) – for each iteration \(k\):
-   * Compute \(\alpha^{k}\) and update the solution and residual using `cgstep_alpha`.  
+2. **Compute initial residual** $r^{0}=b-\mathbf{A}x^{0}$ and set the first direction $p^{0}=r^{0}$.  
+3. **Iterative loop** (performed inside `solve`) – for each iteration $k$:
+   * Compute $\alpha^{k}$ and update the solution and residual using `cgstep_alpha`.  
    * Test convergence against `tolerance` or the denominator threshold (`threshold`).  
-   * If not converged, compute \(\beta^{k}\) and update the search direction using `cgstep_beta`.  
+   * If not converged, compute $\beta^{k}$ and update the search direction using `cgstep_beta`.  
 4. **Termination** – stop when convergence criteria are satisfied or the maximum number of iterations (`iterations`) is reached.  
 
 The algorithmic steps are described in the component’s official documentation (introduction paragraphs)【official_documentation.introduction[1].text】 and are consistent with the standard CG method as presented in the scientific reference *“An Introduction to the Conjugate Gradient Method”* (Shewchuk, 1994)【scientific_context.component_specific[0].text】.  
@@ -183,7 +183,7 @@ All cited parameters (`iterations`, `tolerance`, `threshold`, `warmStart`) are d
 ## 4. Internal Architecture and Execution
 
 ### Internal Responsibilities
-The **CGLinearSolver** class implements the conjugate‑gradient algorithm for solving \(A x = b\). Its core responsibilities are provided by the following methods:
+The **CGLinearSolver** class implements the conjugate‑gradient algorithm for solving $A x = b$. Its core responsibilities are provided by the following methods:
 
 * **init()** – validates data fields (`tolerance`, `threshold`), issues warnings for negative values, and resets runtime state (`timeStepCount`, `equilibriumReached`). Implementation in *F2* lines 46‑65【F2,46-65】.  
 * **reinit()** – overridden as a no‑op (empty body) in *F3* line 66【F3,66】.  
@@ -259,13 +259,13 @@ All conditional paths, configuration effects, and specialization differences are
 ### Local Data Fields
 | C++ attribute | Exposed SOFA name | C++ type | Default value / expression | Functional description | Declaration & initialization references |
 |---|---|---|---|---|---|
-| `d_smallDenominatorThreshold` | `threshold` | `Data<Real>` | `(Real)1e-5` | Minimum value of the denominator \\((p^T A p)\\) in the Conjugate Gradient solution | Declared in **F1** line 47; default expression from structured attribute; marked required in constructor – see **F6** line 36 and constructor body **F6** line 41 |
+| `d_smallDenominatorThreshold` | `threshold` | `Data<Real>` | `(Real)1e-5` | Minimum value of the denominator $(p^T A p)$ in the Conjugate Gradient solution | Declared in **F1** line 47; default expression from structured attribute; marked required in constructor – see **F6** line 36 and constructor body **F6** line 41 |
 | `d_warmStart` | `warmStart` | `Data<bool>` | `false` | Use previous solution as initial solution, which may improve the initial guess if the system evolves smoothly | Declared in **F1** line 48; default expression from structured attribute; constructor reference **F6** line 37 |
 
 ### Inherited Data Fields
 | C++ attribute | Exposed SOFA name | Owner class | C++ type | Default value / expression | Functional description | Declaration & initialization references |
 |---|---|---|---|---|---|---|
-| `d_parallelInverseProduct` | `parallelInverseProduct` | `MatrixLinearSolver<Matrix,Vector,NoThreadManager>` | `Data<bool>` | `false` | Parallelize the computation of the product \\(J·M^{-1}·J^T\\) where *M* is the matrix of the linear system and *J* any compatible matrix | Declared in **F2** line 247; default from structured attribute; initialized in **F3** line 39 |
+| `d_parallelInverseProduct` | `parallelInverseProduct` | `MatrixLinearSolver<Matrix,Vector,NoThreadManager>` | `Data<bool>` | `false` | Parallelize the computation of the product $J·M^{-1}·J^T$ where *M* is the matrix of the linear system and *J* any compatible matrix | Declared in **F2** line 247; default from structured attribute; initialized in **F3** line 39 |
 | `d_factorizationInvalidation` | `factorizationInvalidation` | `MatrixLinearSolver<Matrix,Vector,NoThreadManager>` | `Data<bool>` (protected) | `false` | Internal data for detection of cache invalidation of the matrix factorization | Declared in **F2** line 336; default from structured attribute; initialized in **F3** line 45 |
 | `d_maxIter` | `iterations` | `IterativeSolver` | `Data<unsigned>` | `static_cast<sofa::Size>(25)` | Maximum number of iterations | Declared in **F4** line 45; default from structured attribute; initialized in **F5** line 28; marked required in constructor – **F6** line 39 |
 | `d_tolerance` | `tolerance` | `IterativeSolver` | `Data<SReal>` | `static_cast<SReal>(1e-5)` | Desired convergence accuracy | Declared in **F4** line 48; default from structured attribute; initialized in **F5** line 29; marked required in constructor – **F6** line 40 |

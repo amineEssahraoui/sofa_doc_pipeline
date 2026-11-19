@@ -102,23 +102,23 @@ These dependencies illustrate that **PCGLinearSolver** sits at the intersection 
 
 The **PCGLinearSolver** component solves a linear system  
 
-\[
+$$
 \mathbf{M}\,\mathbf{x}= \mathbf{b},
-\]
+$$
 
-where \(\mathbf{M}\) is a symmetric positive‑definite (SPD) matrix, \(\mathbf{x}\) the unknown vector, and \(\mathbf{b}\) the right‑hand side.  The solver is intended for large, sparse systems that arise in SOFA simulations and therefore uses an iterative method rather than a direct factorisation 【SOFA Evidence: official documentation – introduction】.  
+where $\mathbf{M}$ is a symmetric positive‑definite (SPD) matrix, $\mathbf{x}$ the unknown vector, and $\mathbf{b}$ the right‑hand side.  The solver is intended for large, sparse systems that arise in SOFA simulations and therefore uses an iterative method rather than a direct factorisation 【SOFA Evidence: official documentation – introduction】.  
 
 ### Mathematical Formulation  
 
-The preconditioned conjugate gradient (PCG) method seeks a sequence \(\{\mathbf{x}_k\}\) that minimizes the quadratic functional  
+The preconditioned conjugate gradient (PCG) method seeks a sequence $\{\mathbf{x}_k\}$ that minimizes the quadratic functional  
 
-\[
+$$
 \Phi(\mathbf{x}) = \tfrac{1}{2}\mathbf{x}^{\!\top}\mathbf{M}\mathbf{x} - \mathbf{x}^{\!\top}\mathbf{b},
-\]
+$$
 
-subject to the SPD property of \(\mathbf{M}\).  Introducing a preconditioner \(\mathbf{P}\approx\mathbf{M}\) (typically SPD), the PCG iteration reads  
+subject to the SPD property of $\mathbf{M}$.  Introducing a preconditioner $\mathbf{P}\approx\mathbf{M}$ (typically SPD), the PCG iteration reads  
 
-\[
+$$
 \begin{aligned}
 \mathbf{r}_0 &= \mathbf{b} - \mathbf{M}\mathbf{x}_0, \\
 \mathbf{z}_0 &= \mathbf{P}^{-1}\mathbf{r}_0, \\
@@ -130,13 +130,13 @@ subject to the SPD property of \(\mathbf{M}\).  Introducing a preconditioner \(\
 \beta_k &= \frac{\mathbf{r}_{k+1}^{\!\top}\mathbf{z}_{k+1}}{\mathbf{r}_k^{\!\top}\mathbf{z}_k}, \\
 \mathbf{p}_{k+1} &= \mathbf{z}_{k+1} + \beta_k \mathbf{p}_k .
 \end{aligned}
-\]
+$$
 
 The iteration stops when either  
 
-\[
+$$
 \|\mathbf{r}_k\| \le \text{tolerance} \quad\text{or}\quad k \ge \text{maxIter},
-\]
+$$
 
 where *tolerance* and *maxIter* are user‑configurable parameters 【SOFA Evidence: structured_attributes – d_tolerance (line 48, F4)】 and 【SOFA Evidence: structured_attributes – d_maxIter (line 45, F4)】.  
 
@@ -144,7 +144,7 @@ The component provides a Boolean flag **use_precond** that enables or disables t
 
 #### Relation to the source code  
 
-* The update of the search direction \(\mathbf{p}\) with the scalar \(\beta\) is performed by the inline method  
+* The update of the search direction $\mathbf{p}$ with the scalar $\beta$ is performed by the inline method  
 
   ```cpp
   inline void cgstep_beta(Vector& p, Vector& r, Real beta);
@@ -152,7 +152,7 @@ The component provides a Boolean flag **use_precond** that enables or disables t
 
   declared in *PCGLinearSolver.h* (line 73, F1) and defined in the same file (lines 85‑89, F1) 【SOFA Evidence: method_links – cgstep_beta】.  
 
-* The update of the solution vector \(\mathbf{x}\) with the scalar \(\alpha\) is performed by  
+* The update of the solution vector $\mathbf{x}$ with the scalar $\alpha$ is performed by  
 
   ```cpp
   inline void cgstep_alpha(Vector& x, Vector& p, Real alpha);
@@ -160,16 +160,16 @@ The component provides a Boolean flag **use_precond** that enables or disables t
 
   declared (line 77, F1) and defined (lines 92‑95, F1) 【SOFA Evidence: method_links – cgstep_alpha】.  
 
-These methods correspond directly to the \(\alpha_k\) and \(\beta_k\) formulas above.
+These methods correspond directly to the $\alpha_k$ and $\beta_k$ formulas above.
 
 ### Numerical Algorithm  
 
 The **PCGLinearSolver** implements the standard preconditioned conjugate gradient algorithm as described in the scientific literature on CG (e.g., Shewchuk’s “Painless Conjugate Gradient” 【Scientific Context: painless‑conjugate‑gradient (1).pdf, pp. 47‑48】).  The algorithm proceeds as follows:
 
-1. **Initialisation** (`init()` – line 58, F1) creates the initial residual \(\mathbf{r}_0\) and, if `use_precond` is true, applies the preconditioner \(\mathbf{P}^{-1}\) to obtain \(\mathbf{z}_0\).  
+1. **Initialisation** (`init()` – line 58, F1) creates the initial residual $\mathbf{r}_0$ and, if `use_precond` is true, applies the preconditioner $\mathbf{P}^{-1}$ to obtain $\mathbf{z}_0$.  
 2. **Iteration loop** (`solve(Matrix& M, Vector& x, Vector& b)` – line 57, F1) repeats the PCG steps until the convergence criteria (tolerance or maxIter) are satisfied.  
-3. **Direction update** uses `cgstep_beta` to compute \(\beta_k\) and update the search direction \(\mathbf{p}_{k+1}\).  
-4. **Solution update** uses `cgstep_alpha` to compute \(\alpha_k\) and update the solution \(\mathbf{x}_{k+1}\).  
+3. **Direction update** uses `cgstep_beta` to compute $\beta_k$ and update the search direction $\mathbf{p}_{k+1}$.  
+4. **Solution update** uses `cgstep_alpha` to compute $\alpha_k$ and update the solution $\mathbf{x}_{k+1}$.  
 5. **Residual check** (`checkLinearSystem()` – line 81, F1) verifies that the linear system remains compatible with the solver’s requirements (SPD matrix, appropriate preconditioner).  
 
 When `use_precond` is false, the preconditioning step is omitted, and the algorithm reduces to the classic conjugate gradient method.  The maximum number of iterations and the convergence tolerance are exposed as SOFA data fields `iterations` and `tolerance` 【SOFA Evidence: structured_attributes – d_maxIter, d_tolerance】, allowing the user to control the stopping criteria.  

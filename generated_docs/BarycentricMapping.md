@@ -108,22 +108,22 @@ These dependencies reflect the component’s role within SOFA’s scene‑graph 
 ### Mathematical Problem
 
 The **BarycentricMapping** component implements a linear mapping from a *parent* mechanical model to a *child* model.  
-For each degree of freedom (position, velocity, etc.) of a child node, the unknown quantity \( \mathbf{x}^{\text{out}} \) is expressed as a weighted sum of the corresponding quantities \( \mathbf{x}^{\text{in}}_k \) of the parent nodes that belong to the same topological cell (e.g., a triangle or tetrahedron).  
+For each degree of freedom (position, velocity, etc.) of a child node, the unknown quantity $\mathbf{x}^{\text{out}}$ is expressed as a weighted sum of the corresponding quantities $\mathbf{x}^{\text{in}}_k$ of the parent nodes that belong to the same topological cell (e.g., a triangle or tetrahedron).  
 The weights are the **barycentric coordinates** of the child point with respect to that cell.
 
-Formally, the problem is to find, for every child node \(i\),
+Formally, the problem is to find, for every child node $i$,
 
-\[
+$$
 \mathbf{x}^{\text{out}}_i = \sum_{k=1}^{N_c} \lambda_{ik}\,\mathbf{x}^{\text{in}}_{c_k},
-\]
+$$
 
 where  
 
-* \(N_c\) – number of vertices of the parent cell containing the child point,  
-* \(c_k\) – index of the \(k\)-th parent vertex of that cell,  
-* \(\lambda_{ik}\) – barycentric coordinate of child node \(i\) relative to vertex \(c_k\) (see Scientific Context below),  
-* \(\mathbf{x}^{\text{in}}_{c_k}\) – input (parent) quantity (position, velocity, …),  
-* \(\mathbf{x}^{\text{out}}_i\) – output (child) quantity to be produced.
+* $N_c$ – number of vertices of the parent cell containing the child point,  
+* $c_k$ – index of the $k$-th parent vertex of that cell,  
+* $\lambda_{ik}$ – barycentric coordinate of child node $i$ relative to vertex $c_k$ (see Scientific Context below),  
+* $\mathbf{x}^{\text{in}}_{c_k}$ – input (parent) quantity (position, velocity, …),  
+* $\mathbf{x}^{\text{out}}_i$ – output (child) quantity to be produced.
 
 The same linear relation is used for the Jacobian‑vector products (`applyJ`) and the transpose Jacobian‑vector products (`applyJT`) required by SOFA’s mechanical solvers.
 
@@ -133,44 +133,44 @@ The same linear relation is used for the Jacobian‑vector products (`applyJ`) a
 
 #### Barycentric coordinates
 
-For a point \(P\) inside a simplex (segment, triangle, tetrahedron) with vertices \(\{V_1,\dots,V_{N_c}\}\), the barycentric coordinates \(\{\lambda_k\}\) satisfy  
+For a point $P$ inside a simplex (segment, triangle, tetrahedron) with vertices $\{V_1,\dots,V_{N_c}\}$, the barycentric coordinates $\{\lambda_k\}$ satisfy  
 
-\[
+$$
 \sum_{k=1}^{N_c} \lambda_k = 1,\qquad
 \lambda_k \ge 0 \;\;(\text{inside the simplex}),
-\]
+$$
 
 and the geometric interpolation property  
 
-\[
+$$
 P = \sum_{k=1}^{N_c} \lambda_k V_k .
-\]
+$$
 
 In 2‑D (triangle) the coordinates can be expressed by area ratios  
 
-\[
+$$
 \lambda_1 = \frac{\operatorname{area}(P V_2 V_3)}{\operatorname{area}(V_1 V_2 V_3)},\quad
 \lambda_2 = \frac{\operatorname{area}(V_1 P V_3)}{\operatorname{area}(V_1 V_2 V_3)},\quad
 \lambda_3 = \frac{\operatorname{area}(V_1 V_2 P)}{\operatorname{area}(V_1 V_2 V_3)},
-\]
+$$
 
 and analogously in 3‑D by volume ratios.  
 These definitions are described in the scientific reference *barycentric‑coordinates.pdf* (pages 1‑3)【Scientific Context: barycentric‑coordinates.pdf p.1‑3】.
 
 #### Mapping equations
 
-Given the barycentric matrix \( \Lambda \in \mathbb{R}^{N_{\text{out}}\times N_{\text{in}}}\) whose entry \(\Lambda_{ik}= \lambda_{ik}\) (zero if parent vertex \(k\) does not belong to the cell of child node \(i\)), the mapping reads  
+Given the barycentric matrix $\Lambda \in \mathbb{R}^{N_{\text{out}}\times N_{\text{in}}}$ whose entry $\Lambda_{ik}= \lambda_{ik}$ (zero if parent vertex $k$ does not belong to the cell of child node $i$), the mapping reads  
 
-\[
+$$
 \boxed{\; \mathbf{X}^{\text{out}} = \Lambda \,\mathbf{X}^{\text{in}} \;}
-\]
+$$
 
-where \(\mathbf{X}^{\text{in}}\) and \(\mathbf{X}^{\text{out}}\) are column vectors stacking all input and output DOFs respectively.  
+where $\mathbf{X}^{\text{in}}$ and $\mathbf{X}^{\text{out}}$ are column vectors stacking all input and output DOFs respectively.  
 
-The Jacobian of the mapping is precisely the matrix \(\Lambda\); consequently  
+The Jacobian of the mapping is precisely the matrix $\Lambda$; consequently  
 
-* **applyJ** computes \(\mathbf{Y}^{\text{out}} = \Lambda \,\mathbf{Y}^{\text{in}}\) for derivative vectors,  
-* **applyJT** computes \(\mathbf{Y}^{\text{in}} = \Lambda^{\!\top} \mathbf{Y}^{\text{out}}\) for adjoint vectors.
+* **applyJ** computes $\mathbf{Y}^{\text{out}} = \Lambda \,\mathbf{Y}^{\text{in}}$ for derivative vectors,  
+* **applyJT** computes $\mathbf{Y}^{\text{in}} = \Lambda^{\!\top} \mathbf{Y}^{\text{out}}$ for adjoint vectors.
 
 *Source:* The component’s C++ interface declares these operations (`apply`, `applyJ`, `applyJT`) in *BarycentricMapping.h* (methods `apply`, `applyJ`, `applyJT` lines 73‑76)【F1:71‑76】. The implementation files confirm that the same linear combination is performed, although the bodies are not examined for internal algorithmic detail【F2:293‑303】【F2:306‑315】【F2:319‑328】.
 
@@ -179,7 +179,7 @@ The Jacobian of the mapping is precisely the matrix \(\Lambda\); consequently
 The documented algorithm consists of the following high‑level steps (as inferred from the public method list and the component description):
 
 1. **Topology analysis** – `populateTopologies()` builds the correspondence between child nodes and parent cells.  
-2. **Barycentric weight computation** – `createMapperFromTopology()` evaluates the barycentric coordinates \(\lambda_{ik}\) for each child node with respect to its parent cell (using the geometric definitions from the scientific context).  
+2. **Barycentric weight computation** – `createMapperFromTopology()` evaluates the barycentric coordinates $\lambda_{ik}$ for each child node with respect to its parent cell (using the geometric definitions from the scientific context).  
 3. **Matrix assembly** – the weights are stored in a sparse linear mapper (accessible via `getMapper()`).  
 4. **Linear evaluation** – `apply()` (and the derivative variants `applyJ`, `applyJT`) multiply the input vector(s) by the pre‑computed weight matrix to produce the output.
 
@@ -212,18 +212,18 @@ Principal methods and their responsibilities:
 
 | Method | Responsibility | Source |
 |--------|----------------|--------|
-| `init()` | Sets component state to *Invalid*, calls base init, populates topologies, creates a mapper if missing, initializes the mapper, then marks the component *Valid* [F1 239‑268] |
-| `reinit()` | Clears the existing mapper and re‑initializes it [F1 271‑278] |
-| `apply()` | Resizes the mapper to the output model and applies the mapping to positions [F1 293‑303] |
-| `applyJ()` | Applies the Jacobian (velocity) mapping [F1 306‑315] |
-| `applyJT()` (mechanical) | Applies the transpose Jacobian (force) mapping for velocities [F1 319‑328] |
-| `applyJT()` (constraint) | Applies the transpose Jacobian for constraint matrices [F1 372‑381] |
-| `draw()` | Visualises output points and mapping lines when display flags are enabled [F1 349‑368] |
-| `handleTopologyChange()` | Forwards topology modifications to the internal mapper [F1 385‑393] |
-| `populateTopologies()` | Retrieves or validates input/output topologies from the surrounding context [F1 111‑138] |
-| `createMapperFromTopology()` | Instantiates a concrete mapper class based on the concrete type of the input topology (regular grid, sparse grid, mesh, etc.) [F1 141‑236] |
-| `initMapper()` | Calls the mapper’s `init` with either rest or current positions depending on `d_useRestPosition` [F1 281‑290] |
-| `getMapper()` | Returns the raw pointer to the internal mapper [F2 84‑87] |
+| `init()` | Sets component state to *Invalid*, calls base init, populates topologies, creates a mapper if missing, initializes the mapper, then marks the component *Valid* | [F1 239‑268] |
+| `reinit()` | Clears the existing mapper and re‑initializes it | [F1 271‑278] |
+| `apply()` | Resizes the mapper to the output model and applies the mapping to positions | [F1 293‑303] |
+| `applyJ()` | Applies the Jacobian (velocity) mapping | [F1 306‑315] |
+| `applyJT()` (mechanical) | Applies the transpose Jacobian (force) mapping for velocities | [F1 319‑328] |
+| `applyJT()` (constraint) | Applies the transpose Jacobian for constraint matrices | [F1 372‑381] |
+| `draw()` | Visualises output points and mapping lines when display flags are enabled | [F1 349‑368] |
+| `handleTopologyChange()` | Forwards topology modifications to the internal mapper | [F1 385‑393] |
+| `populateTopologies()` | Retrieves or validates input/output topologies from the surrounding context | [F1 111‑138] |
+| `createMapperFromTopology()` | Instantiates a concrete mapper class based on the concrete type of the input topology (regular grid, sparse grid, mesh, etc.) | [F1 141‑236] |
+| `initMapper()` | Calls the mapper’s `init` with either rest or current positions depending on `d_useRestPosition` | [F1 281‑290] |
+| `getMapper()` | Returns the raw pointer to the internal mapper | [F2 84‑87] |
 
 ### Execution Workflow
 1. **Construction** – The constructor allocates `internalMatrix` and, if a mapper is supplied, registers it as a slave [F1 74‑79]. When only an input topology is given, `populateTopologies()` and `createMapperFromTopology()` are invoked immediately [Constructor F1 89‑94].

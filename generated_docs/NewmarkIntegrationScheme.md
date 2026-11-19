@@ -115,45 +115,45 @@ These dependencies illustrate that `NewmarkIntegrationScheme` is a **scene‑gra
 
 The **NewmarkIntegrationScheme** component solves the second‑order dynamical equation of a mechanical system written in the form  
 
-\[
+$$
 M a_{t}+ (r_M M + r_K K) v_{t}+ K x_{t}= f_{\text{ext}}(t) ,
-\]
+$$
 
 where  
 
-* \(x_{t}\) – nodal positions at time \(t\)  
-* \(v_{t}= \dot x_{t}\) – nodal velocities  
-* \(a_{t}= \ddot x_{t}\) – nodal accelerations  
-* \(M\) – mass matrix, \(K\) – stiffness matrix  
-* \(r_M , r_K\) – Rayleigh damping coefficients (optional)  
-* \(f_{\text{ext}}(t)\) – external force vector.  
+* $x_{t}$ – nodal positions at time $t$  
+* $v_{t}= \dot x_{t}$ – nodal velocities  
+* $a_{t}= \ddot x_{t}$ – nodal accelerations  
+* $M$ – mass matrix, $K$ – stiffness matrix  
+* $r_M , r_K$ – Rayleigh damping coefficients (optional)  
+* $f_{\text{ext}}(t)$ – external force vector.  
 
-At each time step of size \(h\) the scheme seeks the unknowns \(x_{t+h}, v_{t+h}, a_{t+h}\) that satisfy the governing equations together with the Newmark time‑integration relations (SOFA documentation, Eq. 1‑4)【official_documentation】.
+At each time step of size $h$ the scheme seeks the unknowns $x_{t+h}, v_{t+h}, a_{t+h}$ that satisfy the governing equations together with the Newmark time‑integration relations (SOFA documentation, Eq. 1‑4)【official_documentation】.
 
 ---
 
 ### Mathematical Formulation
 
-The Newmark implicit scheme updates the kinematic fields using the parameters \(\beta\) and \(\gamma\) (SOFA data members `beta` and `gamma` with defaults \(\beta=0.25,\;\gamma=0.5\)【structured_attributes】):
+The Newmark implicit scheme updates the kinematic fields using the parameters $\beta$ and $\gamma$ (SOFA data members `beta` and `gamma` with defaults $\beta=0.25,\;\gamma=0.5$【structured_attributes】):
 
-\[
+$$
 \boxed{
 \begin{aligned}
 x_{t+h} &= x_{t}+h\,v_{t}+ \frac{h^{2}}{2}\bigl[(1-2\beta)\,a_{t}+2\beta\,a_{t+h}\bigr],\\[4pt]
 v_{t+h} &= v_{t}+h\bigl[(1-\gamma)\,a_{t}+ \gamma\,a_{t+h}\bigr].
 \end{aligned}}
 \tag{1}
-\]
+$$
 
-Inserting (1) into the mechanical equilibrium at \(t+h\),
+Inserting (1) into the mechanical equilibrium at $t+h$,
 
-\[
+$$
 M a_{t+h}+ (r_M M+r_K K) v_{t+h}+ K x_{t+h}= f_{\text{ext}}(t+h),
-\]
+$$
 
-and eliminating \(x_{t+h}\) and \(v_{t+h}\) yields a linear system for the unknown acceleration \(a_{t+h}\) (SOFA documentation, Eq. 5‑9) :
+and eliminating $x_{t+h}$ and $v_{t+h}$ yields a linear system for the unknown acceleration $a_{t+h}$ (SOFA documentation, Eq. 5‑9) :
 
-\[
+$$
 \boxed{
 \bigl[(1+h\gamma r_M)M + (h^{2}\beta + h\gamma r_K)K\bigr]\, a_{t+h}
 = f_{\text{ext}}(t+h)
@@ -161,25 +161,25 @@ and eliminating \(x_{t+h}\) and \(v_{t+h}\) yields a linear system for the unkno
  - K\Bigl[x_{t}+h v_{t}+ \frac{h^{2}}{2}(1-2\beta)a_{t}\Bigr].
 }
 \tag{2}
-\]
+$$
 
 **Symbol definitions**
 
 | Symbol | Meaning |
 |--------|---------|
-| \(h\) | Time‑step size |
-| \(\beta,\gamma\) | Newmark parameters controlling implicitness (see `d_beta` and `d_gamma` data fields) |
-| \(M\) | Mass matrix |
-| \(K\) | Stiffness matrix |
-| \(r_M, r_K\) | Rayleigh damping coefficients |
-| \(f_{\text{ext}}(t+h)\) | External force at the end of the step |
-| \(a_{t+h}, v_{t+h}, x_{t+h}\) | Acceleration, velocity, position at the new time level |
+| $h$ | Time‑step size |
+| $\beta,\gamma$ | Newmark parameters controlling implicitness (see `d_beta` and `d_gamma` data fields) |
+| $M$ | Mass matrix |
+| $K$ | Stiffness matrix |
+| $r_M, r_K$ | Rayleigh damping coefficients |
+| $f_{\text{ext}}(t+h)$ | External force at the end of the step |
+| $a_{t+h}, v_{t+h}, x_{t+h}$ | Acceleration, velocity, position at the new time level |
 
 The coefficients that multiply the acceleration in the position and velocity updates are exposed through the component’s C++ interface:
 
-* `getPositionUpdateDerivedFromAcceleration()` returns \(\frac{h^{2}}{2}\,2\beta = h^{2}\beta\) (the factor of \(a_{t+h}\) in (1))【method_links】.  
-* `getPositionUpdateDerivedFromVelocity()` returns \(h\) (the factor of \(v_{t}\) in (1))【method_links】.  
-* `getVelocityUpdateDerivedFromAcceleration()` returns \(h\gamma\) (the factor of \(a_{t+h}\) in (1))【method_links】.
+* `getPositionUpdateDerivedFromAcceleration()` returns $\frac{h^{2}}{2}\,2\beta = h^{2}\beta$ (the factor of $a_{t+h}$ in (1))【method_links】.  
+* `getPositionUpdateDerivedFromVelocity()` returns $h$ (the factor of $v_{t}$ in (1))【method_links】.  
+* `getVelocityUpdateDerivedFromAcceleration()` returns $h\gamma$ (the factor of $a_{t+h}$ in (1))【method_links】.
 
 These methods provide the numerical coefficients required by the solver but do **not** disclose the internal solution algorithm.
 
@@ -189,9 +189,9 @@ These methods provide the numerical coefficients required by the solver but do *
 
 According to the official SOFA documentation (Usage section), each simulation step proceeds as follows:
 
-1. **Newton–Raphson iteration** – the scheme linearises the equilibrium (2) and solves the resulting linear system for the acceleration increment \(a_{t+h}\).  
-2. **Linear solver** – a user‑provided `LinearSolver` component is invoked to solve the linear system defined by the effective matrix \((1+h\gamma r_M)M + (h^{2}\beta + h\gamma r_K)K\).  
-3. **State update** – once \(a_{t+h}\) is obtained, the new velocity and position are computed using the update formulas (1).  
+1. **Newton–Raphson iteration** – the scheme linearises the equilibrium (2) and solves the resulting linear system for the acceleration increment $a_{t+h}$.  
+2. **Linear solver** – a user‑provided `LinearSolver` component is invoked to solve the linear system defined by the effective matrix $(1+h\gamma r_M)M + (h^{2}\beta + h\gamma r_K)K$.  
+3. **State update** – once $a_{t+h}$ is obtained, the new velocity and position are computed using the update formulas (1).  
 
 The component requires a `MechanicalObject` to store the state vectors (positions, velocities, accelerations) and a `LinearSolver` to handle the linear system (SOFA documentation, Usage list)【official_documentation】.
 
@@ -208,9 +208,9 @@ From a scientific standpoint, the above algorithm corresponds to the classical N
 The `NewmarkIntegrationScheme` class provides the coefficients and error‑evaluation functions required by the implicit Newmark time‑integration algorithm.  
 Key responsibilities are implemented in the following overridden methods:
 
-* **`getPositionUpdateDerivedFromAcceleration()`** – returns the scalar factor \( \Delta t^{2}\beta \) used to convert acceleration increments into position updates. Implementation multiplies the time step `m_dt` by itself and by the configurable parameter `d_beta`【F1:43-46】.  
+* **`getPositionUpdateDerivedFromAcceleration()`** – returns the scalar factor $\Delta t^{2}\beta$ used to convert acceleration increments into position updates. Implementation multiplies the time step `m_dt` by itself and by the configurable parameter `d_beta`【F1:43-46】.  
 * **`getPositionUpdateDerivedFromVelocity()`** – returns a zero factor, indicating that velocity does not directly contribute to the position update in this scheme【F1:48-51】.  
-* **`getVelocityUpdateDerivedFromAcceleration()`** – returns the scalar factor \( \Delta t\,\gamma \) that converts acceleration increments into velocity updates【F1:53-56】.  
+* **`getVelocityUpdateDerivedFromAcceleration()`** – returns the scalar factor $\Delta t\,\gamma$ that converts acceleration increments into velocity updates【F1:53-56】.  
 * **`computeCurrentPositionIntegrationError()`** – assembles the residual of the position integration equation using the stored initial state (`m_x0[0]`, `m_v0[0]`, `m_a0[0]`) and the current `position`, `velocity`, and `acceleration` vectors. The method builds a `MultiVecDeriv` object and applies a sequence of `eq`/`peq` operations with coefficients derived from `m_dt`, `d_beta`, and the constant 0.5【F1:59-67】.  
 * **`computeCurrentVelocityIntegrationError()`** – similarly builds the residual for the velocity integration equation, using `m_v0[0]`, `m_a0[0]`, `m_dt`, and `d_gamma`【F1:69-75】.  
 * **`getIntegrationSchemeTimeOrder()`** – reports the scheme’s temporal order as 1, overriding the base class implementation【F2:57-60】.

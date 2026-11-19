@@ -97,7 +97,7 @@ These dependencies illustrate how `BDFIntegrationScheme` fits into SOFA’s modu
 
 The **BDFIntegrationScheme** component solves the ordinary differential equation that stems from Newton’s second law of motion  
 
-\[
+$$
 \begin{bmatrix}
 \displaystyle \frac{dq}{dt}\\[4pt]
 M\,\displaystyle \frac{d\dot q}{dt}
@@ -108,30 +108,124 @@ M\,\displaystyle \frac{d\dot q}{dt}
 F(q,\dot q)
 \end{bmatrix},
 \tag{1}
-\]
+$$
 
 where  
 
-* \(q(t)\) – generalized positions,  
-* \(\dot q(t)\) – generalized velocities,  
-* \(M\) – (typically constant) mass matrix,  
-* \(F(q,\dot q)\) – total force vector (internal + external).  
+* $q(t)$ – generalized positions,  
+* $\dot q(t)$ – generalized velocities,  
+* $M$ – (typically constant) mass matrix,  
+* $F(q,\dot q)$ – total force vector (internal + external).  
 
 Introducing the state vector  
 
-\[
+$$
 y(t)=\begin{bmatrix} q(t) \\ \dot q(t) \end{bmatrix},
 \qquad
 f(t,y)=\begin{bmatrix} \dot q \\ M^{-1}F(q,\dot q) \end{bmatrix},
-\]
+$$
 
 the dynamics can be written compactly as  
 
-\[
+$$
 y'(t)=f\bigl(t,y(t)\bigr). \tag{2}
-\]
+$$
 
-The goal of the component is to compute the state at the next time instant \(t_{n+s}\) (with \(s\) the BDF order) using the known states \(\{y(t_{n+j})\}_{j=0}^{s-1}\).  This is an implicit multistep integration problem.  (Source: SOFA documentation, *Details* section — equation (1) and accompanying text)  
+The goal of the component is to compute the state at the next time instant $t_{n+s}$ (with $s$ the BDF order) using the known states $\{y(t_{n+j})\}_{j=0}^{s-1}$.  This is an implicit multistep integration problem.  (Source: SOFA documentation, *Details* section — equation (1) and accompanying text)  
+
+### Mathematical Formulation
+
+#### Backward‑Differentiation Formula (BDF)
+
+For a BDF of order $s$ the interpolating polynomial  
+
+$$
+L(t)=\sum_{j=0}^{s} y_{n+j}\,l_j(t),\qquad
+l_j(t)=\prod_{\substack{0\le m\le s\\ m\neq j}}
+\frac{t-t_{n+m}}{t_{n+j}-t_{n+m}},
+$$
+
+approximates the state over the interval $[t_n,t_{n+s}]$.  
+Differentiating and evaluating at the newest node $t_{n+s}$ yields the BDF relation  
+
+$$
+\sum_{j=0}^{s} y_{n+j}\,l'_j\!\bigl(t_{n+s}\bigr)=
+f\!\bigl(t_{n+s},y_{n+s}\bigr). \tag{3}
+$$
+
+Define the **residual function**
+
+$$
+r(q,\dot q)=
+\Bigl[\sum_{j=0}^{s} y_{n+j}\,l'_j(t_{n+s})\Bigr]
+-
+f\!\bigl(t_{n+s},y_{n+s}\bigr), \tag{4}
+$$
+
+with $y_{n+s}=\begin{bmatrix}q\\ \dot q\end{bmatrix}$.  
+The next state is obtained as a root of $r$.
+
+*The coefficients $l'_j(t_{n+s})$ are uniquely determined by the BDF order (attribute `order`/`d_order` in `LinearMultistepIntegrationScheme.h`, default = 2) and may vary when the time step changes* — see the structured attribute entry (source F3, line 44).  
+
+#### Newton–Raphson Linearisation
+
+At Newton iteration $i$ the residual is linearised, leading to the block system  
+
+$$
+\begin{bmatrix}
+l'_s(t_{n+s}) I & -\Delta t\, I \\[4pt]
+-\Delta t\,\displaystyle\frac{\partial F}{\partial q} &
+l'_s(t_{n+s}) M -\Delta t\,\displaystyle\frac{\partial F}{\partial \dot q}
+\end{bmatrix}
+\begin{bmatrix}
+q^{i+1}-q^{i}\\[4pt]
+\dot q^{i+1}-\dot q^{i}
+\end{bmatrix}
+=
+-\,r\!\bigl(q^{i},\dot q^{i}\bigr). \tag{5}
+$$
+
+Eliminating the position increment gives the **velocity‑based** system used in SOFA  
+
+$$
+\Bigl(l'_s(t_{n+s}) M
+-\Delta t\,\frac{\partial F}{\partial \dot q}
+-\frac{\Delta t^{2}}{l'_s(t_{n+s})}\frac{\partial F}{\partial q}\Bigr)
+\bigl(\dot q^{i+1}-\dot q^{i}\bigr)
+=
+-\,r_{\dot q}^{i}
+-\frac{\Delta t}{l'_s(t_{n+s})}\frac{\partial F}{\partial q}\,
+r_{q}^{i}, \tag{6}
+$$
+
+where $r_{q}$ and $r_{\dot q}$ are the position and velocity components of the residual.  
+Equations (5)–(6) are reproduced verbatim from the SOFA documentation *Details* section (see the two displayed equations).  
+
+### Numerical Algorithm
+
+1. **Coefficient preparation** – the BDF coefficients $l'_j(t_{n+s})$ are computed from the current and previous time steps. In SOFA this is performed by the virtual method `computeFactors()` (declared in `BDFIntegrationScheme.h` — method link [F1:49]; implementation in `BDFIntegrationScheme.cpp` — lines 38‑78).  
+
+2. **Residual assembly** – using the known states $\{y_{n+j}\}$ and the current guess $(q^{i},\dot q^{i})$, the residual $r$ defined in (4) is evaluated.  
+
+3. **Newton–Raphson solve** – the linear system (5) (or its reduced form (6)) is assembled. The block matrix involves the mass matrix $M$, the Jacobians $\partial F/\partial q$ and $\partial F/\partial \dot q$, the time step $\Delta t$, and the BDF coefficient $l'_s(t_{n+s})$.  
+
+4. **Linear solve** – the system is solved (SOFA uses a block Gaussian elimination as described in the documentation). The solution provides the increments $\Delta q$ and $\Delta\dot q$, which update the guess:  
+   $$
+   q^{i+1}=q^{i}+\Delta q,\qquad
+   \dot q^{i+1}=\dot q^{i}+\Delta\dot q .
+   $$
+
+5. **Convergence test** – the norm of the residual is checked; if it is below the tolerance, the iteration stops and the new state $y_{n+s}$ is accepted. Otherwise, another Newton iteration is performed.  
+
+The algorithm is **implicit** and requires a Newton‑Raphson solver (e.g., `NewtonRaphsonSolver`) because the residual (4) is nonlinear in the unknown state.  The component supports any BDF order $s\ge 1$ and allows variable time‑step sizes, as stated in the SOFA introduction text.  
+
+*General BDF theory (order, stability, relation to backward Euler) is documented in the scientific reference *chapt02.pdf* (pages 32‑36) and in the review of linear multistep methods (pages 2‑3 of *0810.4965v1.pdf*).  These sources provide the mathematical background but are not specific to the SOFA implementation.*
+
+**Local source references for this section**
+
+- `F1`: `Sofa/Component/IntegrationScheme/Backward/src/sofa/component/integrationscheme/backward/BDFIntegrationScheme.h`
+- `F2`: `Sofa/Component/IntegrationScheme/Backward/src/sofa/component/integrationscheme/backward/BDFIntegrationScheme.cpp`
+- `F3`: `Sofa/Component/IntegrationScheme/Backward/src/sofa/component/integrationscheme/backward/LinearMultistepIntegrationScheme.h`
 
 ## 4. Internal Architecture and Execution
 
@@ -249,33 +343,3 @@ No verified inherited **SOFA_Data** fields were identified in the available C++ 
   * Generic component fields (e.g., `name`, `printLog`, etc.) are documented but lack explicit C++ declarations in the supplied files.  
 
 *All statements are directly supported by the supplied SOFA source files (F1, F2) and the official component documentation.*
-
-## 6. Diagnostics and Usage
-
-### Practical Usage and Integration
-The **BDFIntegrationScheme** is an implicit ODE integration component that implements a Backward Differentiation Formula of arbitrary order. It belongs to the *integration schemes* category and requires a **NewtonRaphsonSolver** to resolve the nonlinear system generated at each time step【SOFA Evidence: Introduction paragraph】. The scheme can be combined with any mechanical model that provides a force evaluation compatible with Newton‑Raphson iteration. It inherits from `LinearMultistepIntegrationScheme`【SOFA Evidence: integration_constraints, F4 line 39】, thus sharing its base‑class interface and data handling.
-
-No concrete usage example containing this component is present in the supplied documentation【SOFA Evidence: evidence_limitations】; therefore, users should refer to generic integration‑scheme examples in the SOFA documentation and instantiate `BDFIntegrationScheme` as a child of the scene’s `OdeSolver` node.
-
-### Configuration Guidelines
-| Parameter | SOFA name | Type | Default | Origin | Remarks |
-|-----------|-----------|------|---------|--------|---------|
-| Order of the BDF | `order` | `core::objectmodel::Data<sofa::Size>` | `Size(2)` | Inherited directly from `LinearMultistepIntegrationScheme`【SOFA Evidence: configuration, F2 line 44】; default value defined in `LinearMultistepIntegrationScheme.cpp` line 39【SOFA Evidence: configuration, default_source F3 line 39】 | Required field; determines the number of past samples used (order = samples − 1). No deprecation flag is indicated. |
-
-No additional configuration fields are documented for this component. The `order` value may be set to any positive integer; the implementation supports any order and adapts to variable time‑step sizes as described in the introduction【SOFA Evidence: Introduction paragraph】.
-
-### Diagnostics and Troubleshooting
-| Diagnostic | Trigger | Observed Behavior | Evidence |
-|------------|---------|-------------------|----------|
-| Assertion failure: `m_samples.size() > 1` | The scheme is asked to compute factors before at least two time samples have been stored (i.e., before the first integration step). | Program aborts with an assertion message. | `computeFactors` contains `assert(m_samples.size() > 1);`【SOFA Evidence: diagnostic_implementations, F1 lines 38‑78】 |
-| Assertion failure: `order >= 1` | The computed order (`m_samples.size() - 1`) is less than 1, which occurs if only a single sample is available. | Program aborts with an assertion message. | Same `computeFactors` implementation includes `assert(order >= 1);`【SOFA Evidence: diagnostic_implementations, F1 lines 38‑78】 |
-
-These assertions are the only explicit diagnostics identified in the supplied source. No warning messages, error codes, or recovery mechanisms are documented. Consequently, the corrective action is to ensure that the integration scheme is initialized with at least two time samples (i.e., the simulation must have performed one full time step before factor computation).
-
-## Limitations and Recommendations
-* **Version mismatch** – The documentation URL (`https://sofa-framework.github.io/doc/components/odesolver/backward/bdfodesolver/`) has not been verified against the exact source‑code commit (`3df811be…`) used here【SOFA Evidence: provenance】. Users should verify compatibility when upgrading SOFA versions.  
-* **Absence of concrete examples** – No usage example for `BDFIntegrationScheme` is provided in the supplied material【SOFA Evidence: evidence_limitations】. It is recommended to consult the generic ODE solver examples in the SOFA documentation and adapt them to this component.  
-* **Diagnostic candidates only** – The selection markers in the source (`explicit_diagnostic`, `numerical_precondition_candidate`) indicate potential failure points but are not validated runtime tests【SOFA Evidence: evidence_limitations】. Users should treat the two assertions as the only guaranteed runtime checks.  
-* **Numerical preconditions** – The scheme assumes that a sufficient number of past samples are available and that the time step size may vary; however, no explicit stability or convergence guarantees are documented. It is advisable to keep the time step within the stability region typical for BDF methods (e.g., moderate step sizes for higher orders).  
-
-By respecting these constraints and ensuring proper initialization (at least two samples before factor computation), the `BDFIntegrationScheme` can be employed as a flexible implicit integrator within SOFA simulations.

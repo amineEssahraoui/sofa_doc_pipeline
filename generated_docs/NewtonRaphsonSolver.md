@@ -88,53 +88,53 @@ These dependencies define the modular placement of `NewtonRaphsonSolver` within 
 
 The **NewtonRaphsonSolver** component solves a system of nonlinear equations  
 
-\[
+$$
 F(x)=0 ,\qquad F:\mathbb{R}^{k}\rightarrow\mathbb{R}^{k},
-\]
+$$
 
-by iteratively refining an estimate of the root \(x\in\mathbb{R}^{k}\).  
-The unknown vector \(x\) (the *state*) and the residual vector \(F(x)\) are supplied by a user‑defined function that implements the interface `newton_raphson::BaseNonLinearFunction` (see method `solve` in *NewtonRaphsonSolver.cpp*).  
+by iteratively refining an estimate of the root $x\in\mathbb{R}^{k}$.  
+The unknown vector $x$ (the *state*) and the residual vector $F(x)$ are supplied by a user‑defined function that implements the interface `newton_raphson::BaseNonLinearFunction` (see method `solve` in *NewtonRaphsonSolver.cpp*).  
 
 ### Mathematical Formulation
 
-At iteration \(n\) the solver forms the Jacobian matrix  
+At iteration $n$ the solver forms the Jacobian matrix  
 
-\[
+$$
 \nabla_F(x_n)=\frac{\partial F}{\partial x}\bigg|_{x=x_n}\in\mathbb{R}^{k\times k},
-\]
+$$
 
 and solves the linear system  
 
-\[
+$$
 \nabla_F(x_n)\,\bigl(x_{n+1}-x_n\bigr) = -F(x_n) \tag{1}
-\]
+$$
 
 as documented in the official SOFA description【introduction, equation】.  
-Denoting the solution of (1) by \(\Delta x\),
+Denoting the solution of (1) by $\Delta x$,
 
-\[
+$$
 \Delta x = x_{n+1}-x_n,
-\]
+$$
 
 the new approximation is obtained by the update  
 
-\[
+$$
 x_{n+1}=x_n+\Delta x . \tag{2}
-\]
+$$
 
 The iteration stops when one (or more) of the following convergence criteria, all exposed as component data, is satisfied:
 
 | Data attribute | Symbol in the formulation | Meaning |
 |----------------|---------------------------|---------|
-| `relativeSuccessiveStoppingThreshold` | \(\displaystyle \frac{\|F(x_n)\|}{\|F(x_{n-1})\|}\) | Ratio of successive residual norms |
-| `relativeInitialStoppingThreshold`   | \(\displaystyle \frac{\|F(x_n)\|}{\|F(x_0)\|}\) | Ratio of current to initial residual norm |
-| `absoluteResidualStoppingThreshold` | \(\|F(x_n)\|\) | Absolute residual norm |
-| `relativeEstimateDifferenceThreshold`| \(\displaystyle \frac{\|x_n-x_{n-1}\|}{\|x_{n-1}\|}\) | Relative change of the estimate |
-| `absoluteEstimateDifferenceThreshold`| \(\|x_n-x_{n-1}\|\) | Absolute change of the estimate |
+| `relativeSuccessiveStoppingThreshold` | $\displaystyle \frac{\Vert F(x_n)\Vert }{\Vert F(x_{n-1})\Vert }$ | Ratio of successive residual norms |
+| `relativeInitialStoppingThreshold`   | $\displaystyle \frac{\Vert F(x_n)\Vert }{\Vert F(x_0)\Vert }$ | Ratio of current to initial residual norm |
+| `absoluteResidualStoppingThreshold` | $\Vert F(x_n)\Vert $ | Absolute residual norm |
+| `relativeEstimateDifferenceThreshold`| $\displaystyle \frac{\Vert x_n-x_{n-1}\Vert }{\Vert x_{n-1}\Vert }$ | Relative change of the estimate |
+| `absoluteEstimateDifferenceThreshold`| $\Vert x_n-x_{n-1}\Vert $ | Absolute change of the estimate |
 
 The maximum number of Newton iterations is limited by the data attribute `maxNbIterationsNewton` (default = 1)【F1, line 38】.  
 
-If the Newton step does not produce a sufficient decrease, an optional line‑search is performed. The line‑search repeats the update with a scaled step length \(\alpha\) (the *lineSearchCoefficient*, default = 0.5) up to `maxNbIterationsLineSearch` times【F1, lines 44‑45】.
+If the Newton step does not produce a sufficient decrease, an optional line‑search is performed. The line‑search repeats the update with a scaled step length $\alpha$ (the *lineSearchCoefficient*, default = 0.5) up to `maxNbIterationsLineSearch` times【F1, lines 44‑45】.
 
 ### Numerical Algorithm
 
@@ -143,10 +143,10 @@ The algorithm, as described in the component documentation, proceeds as follows:
 1. **Initialisation** – `init()` prepares internal state (no algorithmic detail is exposed).  
 2. **Start** – `start()` resets iteration counters.  
 3. **Iteration** (repeated until convergence or the iteration limit):
-   * Evaluate the residual \(F(x_n)\) and, if required, the Jacobian \(\nabla_F(x_n)\) via the supplied `BaseNonLinearFunction`.  
-   * Solve the linear system (1) for \(\Delta x\).  
-   * Compute a tentative new state \(x_{n+1}=x_n+\Delta x\).  
-   * If a line‑search is enabled, call the static method `lineSearchIteration` which scales \(\Delta x\) by the coefficient `lineSearchCoefficient` and recomputes the residual norm, repeating up to `maxNbIterationsLineSearch` times【method_links → lineSearchIteration】.  
+   * Evaluate the residual $F(x_n)$ and, if required, the Jacobian $\nabla_F(x_n)$ via the supplied `BaseNonLinearFunction`.  
+   * Solve the linear system (1) for $\Delta x$.  
+   * Compute a tentative new state $x_{n+1}=x_n+\Delta x$.  
+   * If a line‑search is enabled, call the static method `lineSearchIteration` which scales $\Delta x$ by the coefficient `lineSearchCoefficient` and recomputes the residual norm, repeating up to `maxNbIterationsLineSearch` times【method_links → lineSearchIteration】.  
    * Evaluate the convergence measures using `measureConvergence`; the method returns `true` when any of the thresholds defined by the data attributes listed above is met【method_links → measureConvergence】.  
    * If convergence is not reached, continue with the next Newton iteration.  
 4. **Finalisation** – the solver status (`status`) records whether the process converged, diverged, or stopped because of the iteration limit【F1, line 47】.
